@@ -101,12 +101,12 @@ class SaCLR(object):
                 optimizer.step()
                 n_iter += 1
                 print('Epoch {}/{}, training loss: {:.4f}'
-                      .format(epoch_counter, self.config['epochs'], loss.item()), end='\r')
+                      .format(epoch_counter, self.config['epochs'], loss.item()))
             print('')
 
             # validate the model if requested
             if epoch_counter % self.config['eval_every_n_epochs'] == 0:
-                valid_loss = self._validate(model, valid_loader)
+                valid_loss = self._validate(model, valid_loader, n_iter)
                 if valid_loss < best_valid_loss:
                     # save the model weights
                     best_valid_loss = valid_loss
@@ -131,7 +131,7 @@ class SaCLR(object):
 
         return model
 
-    def _validate(self, model, valid_loader):
+    def _validate(self, model, valid_loader, n_iter=0):
 
         # validation steps
         with torch.no_grad():
@@ -146,7 +146,7 @@ class SaCLR(object):
                 if counter == 0:
                     self.writer.add_embedding(torch.flatten(obj_main, start_dim=1),
                                               metadata=cls,
-                                              label_img=val_x)
+                                              label_img=val_x, global_step=n_iter)
                 counter += 1
             valid_loss /= counter
         model.train()

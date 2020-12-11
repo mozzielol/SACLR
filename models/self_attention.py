@@ -40,5 +40,6 @@ class Self_Attn(nn.Module):
         bg = torch.bmm(proj_value, bg_att.permute(0, 2, 1))
         bg = bg.view(m_batchsize, C, width, height)
 
+        bg = self.gamma * bg + x
         out = self.gamma * out + x
         return out, bg, attention

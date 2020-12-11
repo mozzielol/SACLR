@@ -52,7 +52,7 @@ class SaCLR(object):
         zjs = F.normalize(obj_bg, dim=1)
 
         loss = self.nt_xent_criterion(zis, zjs)
-        return loss
+        return loss, obj_main
 
     def train(self):
 
@@ -87,7 +87,7 @@ class SaCLR(object):
 
                 train_x = train_x.to(self.device)
 
-                loss = self._step(model, train_x)
+                loss, _ = self._step(model, train_x)
 
                 if n_iter % self.config['log_every_n_steps'] == 0:
                     self.writer.add_scalar('train_loss', loss, global_step=n_iter)
@@ -118,7 +118,7 @@ class SaCLR(object):
             # warmup for the first 10 epochs
             if epoch_counter >= 10:
                 scheduler.step(epoch_counter)
-            self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr(), global_step=n_iter)
+            self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)
 
     def _load_pre_trained_weights(self, model):
         try:
@@ -139,10 +139,14 @@ class SaCLR(object):
 
             valid_loss = 0.0
             counter = 0
-            for val_x, _ in valid_loader:
+            for val_x, cls in valid_loader:
                 val_x = val_x.to(self.device)
-                loss = self._step(model, val_x)
+                loss, obj_main = self._step(model, val_x)
                 valid_loss += loss.item()
+                if counter == 0:
+                    self.writer.add_embedding(torch.flatten(obj_main, start_dim=1),
+                                              metadata=cls,
+                                              label_img=val_x)
                 counter += 1
             valid_loss /= counter
         model.train()

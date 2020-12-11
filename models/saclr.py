@@ -80,8 +80,8 @@ class SaCLR(object):
         valid_n_iter = 0
         best_valid_loss = np.inf
 
+        print('Training begin ...')
         for epoch_counter in range(self.config['epochs']):
-            print('Training begin ...')
             for train_x, _ in train_loader:
                 optimizer.zero_grad()
 

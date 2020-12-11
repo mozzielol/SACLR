@@ -6,6 +6,7 @@ from loss.nt_xent import NTXentLoss
 import os
 import shutil
 import sys
+from util.device import get_device
 
 apex_support = False
 try:
@@ -32,15 +33,10 @@ class SaCLR(object):
 
     def __init__(self, dataset, config):
         self.config = config
-        self.device = self._get_device()
+        self.device = get_device()
         self.writer = SummaryWriter()
         self.dataset = dataset
         self.nt_xent_criterion = NTXentLoss(self.device, config['batch_size'], **config['loss'])
-
-    def _get_device(self):
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        print("Running on:", device)
-        return device
 
     def _step(self, model, train_x):
 

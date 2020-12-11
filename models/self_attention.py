@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from util.device import get_device
 
 
 class Self_Attn(nn.Module):
@@ -36,7 +37,7 @@ class Self_Attn(nn.Module):
         out = out.view(m_batchsize, C, width, height)
 
         # attentioin on background
-        bg_att = self.softmax(torch.ones(attention.size()) - attention)
+        bg_att = self.softmax(torch.ones(attention.size().to(get_device())) - attention)
         bg = torch.bmm(proj_value, bg_att.permute(0, 2, 1))
         bg = bg.view(m_batchsize, C, width, height)
 

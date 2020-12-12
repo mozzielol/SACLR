@@ -7,7 +7,7 @@ log_every_n_steps: 50
 weight_decay: 10e-6
 fp16_precision: False
 ckpt: checkpoint
-
+loss_func: sim
 model:
   out_dim: 256
   base_model: "resnet18"

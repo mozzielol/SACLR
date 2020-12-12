@@ -15,8 +15,8 @@ class Encoder(nn.Module):
         self.att = Self_Attn(64, 'relu')
 
         # projection MLP
-        self.l1 = nn.Linear(64, 64)
-        self.l2 = nn.Linear(64, out_dim)
+        self.l1 = nn.Linear(2304, 1024)
+        self.l2 = nn.Linear(1024, out_dim)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -41,7 +41,7 @@ class Encoder(nn.Module):
         return self.project(obj_main), self.project(obj_bg)  # , obj_main, obj_bg, attention
 
     def project(self, x):
-        x1 = torch.mean(x, dim=[2, 3])
+        x1 = torch.flatten(x, start_dim=1)
         x1 = self.l1(x1)
         x1 = F.relu(x1)
         x1 = self.l2(x1)

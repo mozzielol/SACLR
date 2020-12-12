@@ -1,12 +1,15 @@
 import torch
-from models.baseline_encoder import Encoder
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
 from loss.nt_xent import NTXentLoss
+from loss.sim_siam import Siam
 import os
 import shutil
 import sys
 from util.device import get_device
+from models.baseline_encoder import Encoder
+from models.resnet import ResNetSimCLR
+
 
 apex_support = False
 try:
@@ -36,7 +39,13 @@ class SaCLR(object):
         self.device = get_device()
         self.writer = SummaryWriter()
         self.dataset = dataset
-        self.nt_xent_criterion = NTXentLoss(self.device, config['batch_size'], **config['loss'])
+        if config['loss_func'] == 'sim':
+            self.nt_xent_criterion = NTXentLoss(self.device, config['batch_size'], **config['loss'])
+        elif config['loss_func'] == 'siam':
+            self.siam_loss = Siam()
+        else:
+            raise NotImplemented()
+
 
     def _step(self, model, train_x):
 
@@ -47,14 +56,19 @@ class SaCLR(object):
         zis = F.normalize(obj_main, dim=1)
         zjs = F.normalize(obj_bg, dim=1)
 
-        loss = self.nt_xent_criterion(zis, zjs)
+        if self.config['loss_func'] == 'sim':
+            loss = self.nt_xent_criterion(zis, zjs)
+        elif self.config['loss_func'] == 'siam':
+            loss = self.siam_loss(zis, zjs) + self.siam_loss(zjs, zis)
+
         return loss, obj_main
 
     def train(self):
 
         train_loader, valid_loader = self.dataset.get_data_loaders()
 
-        model = Encoder(**self.config["model"]).to(self.device)
+        model = Encoder(**self.config["model"]).to(self.device) if self.config['model']['base_model'] == 'baseline' \
+            else ResNetSimCLR(**self.config['model'])
         model = self._load_pre_trained_weights(model)
 
         optimizer = torch.optim.Adam(model.parameters(), 3e-4, weight_decay=eval(self.config['weight_decay']))

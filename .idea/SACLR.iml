@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/eval_features/.ipynb_checkpoints" />
+      <excludeFolder url="file://$MODULE_DIR$/runs/Dec12_12-12-37_Mozzies-MBP.lan" />
+      <excludeFolder url="file://$MODULE_DIR$/runs/Dec12_12-13-20_Mozzies-MBP.lan" />
+      <excludeFolder url="file://$MODULE_DIR$/runs/Dec12_12-14-23_Mozzies-MBP.lan" />
+      <excludeFolder url="file://$MODULE_DIR$/runs/Dec12_12-15-36_Mozzies-MBP.lan" />
+      <excludeFolder url="file://$MODULE_DIR$/runs/Dec12_12-16-03_Mozzies-MBP.lan" />
+      <excludeFolder url="file://$MODULE_DIR$/runs/Dec12_12-18-58_Mozzies-MBP.lan" />
+      <excludeFolder url="file://$MODULE_DIR$/runs/baseline_encoder" />
+    </content>
     <orderEntry type="jdk" jdkName="Python 3.6 (pytorch)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

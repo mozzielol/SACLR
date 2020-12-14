@@ -48,7 +48,6 @@ class SaCLR(object):
 
 
     def _step(self, model, train_x):
-
         # get the representations and the projections,
         # Currently, get the attention of the representation
         obj_main, obj_bg = model(train_x)  # [N,C]
@@ -57,7 +56,7 @@ class SaCLR(object):
         zjs = F.normalize(obj_bg, dim=1)
 
         if self.config['loss_func'] == 'sim':
-            loss = self.nt_xent_criterion(zis, zjs)
+            loss = self.nt_xent_criterion(zis, zjs) + self.nt_xent_criterion(zjs, zis)
         elif self.config['loss_func'] == 'siam':
             loss = self.siam_loss(zis, zjs) + self.siam_loss(zjs, zis)
 

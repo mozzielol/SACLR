@@ -37,6 +37,7 @@ class ResNetSimCLR(nn.Module):
     def forward(self, x):
         h = self.features(x)
         # obj_main, obj_bg, attention = self.att(h)
+        h = torch.flatten(h, start_dim=1)
         obj_main, obj_bg = self.multi_att(h, h, h)
 
         return self.project(obj_main), self.project(obj_bg)

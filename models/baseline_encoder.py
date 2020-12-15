@@ -14,8 +14,8 @@ class Encoder(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.att = Self_Attn(64, 'relu')
         num_ftrs = 2304
-        self.l3 = nn.Linear(num_ftrs, num_ftrs)
-        self.multi_att = MultiHeadAttention(8, num_ftrs)
+        # self.l3 = nn.Linear(num_ftrs, num_ftrs)
+        # self.multi_att = MultiHeadAttention(8, num_ftrs)
 
         # projection MLP
         self.l1 = nn.Linear(num_ftrs, 1024)
@@ -41,12 +41,12 @@ class Encoder(nn.Module):
         # get the attention of the representation
         obj_main, obj_bg, attention = self.att(h)
 
-        obj_main = torch.flatten(obj_main, start_dim=1)
-        obj_bg = torch.flatten(obj_bg, start_dim=1)
-        obj_main = self.l3(obj_main)
-        obj_bg = self.l3(obj_bg)
-        obj_main = self.multi_att(obj_main, obj_main, obj_main)
-        obj_bg = self.multi_att(obj_bg, obj_bg, obj_bg)
+        # obj_main = torch.flatten(obj_main, start_dim=1)
+        # obj_bg = torch.flatten(obj_bg, start_dim=1)
+        # obj_main = self.l3(obj_main)
+        # obj_bg = self.l3(obj_bg)
+        # obj_main = self.multi_att(obj_main, obj_main, obj_main)
+        # obj_bg = self.multi_att(obj_bg, obj_bg, obj_bg)
 
         return self.project(obj_main), self.project(obj_bg)  # , obj_main, obj_bg, attention
 

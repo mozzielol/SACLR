@@ -63,8 +63,10 @@ def attention(q, k, v, d_k, mask=None, dropout=None):
     if dropout is not None:
         scores = dropout(scores)
 
-    output = torch.matmul(scores, v)
-    return output
+    output = v + torch.matmul(scores, v)
+    bg = v - torch.matmul(scores, v)
+    # bg = torch.matmul(F.softmax(torch.ones(scores.size()) - scores), v)
+    return output, bg
 
 
 class MultiHeadAttention(nn.Module):
@@ -96,10 +98,13 @@ class MultiHeadAttention(nn.Module):
         v = v.transpose(1, 2)
 
         # calculate attention using function we will define next
-        scores = attention(q, k, v, self.d_k, mask, self.dropout)
+        scores, bg = attention(q, k, v, self.d_k, mask, self.dropout)
         # concatenate heads and put through final linear layer
         concat = scores.transpose(1, 2).contiguous() \
             .view(bs, -1, self.d_model)
         output = self.out(concat)
+        concat_bg = bg.transpose(1, 2).contiguous() \
+            .view(bs, -1, self.d_model)
+        bg = self.out(concat_bg)
 
-        return output
+        return output, bg

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.self_attention import Self_Attn
+from models.self_attention import Self_Attn, MultiHeadAttention
 
 
 class Encoder(nn.Module):
@@ -13,9 +13,12 @@ class Encoder(nn.Module):
         self.conv4 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
         self.pool = nn.MaxPool2d(2, 2)
         self.att = Self_Attn(64, 'relu')
+        num_ftrs = 2304
+        self.l3 = nn.Linear(num_ftrs, num_ftrs)
+        self.multi_att = MultiHeadAttention(8, num_ftrs)
 
         # projection MLP
-        self.l1 = nn.Linear(2304, 1024)
+        self.l1 = nn.Linear(num_ftrs, 1024)
         self.l2 = nn.Linear(1024, out_dim)
 
     def forward(self, x):
@@ -37,6 +40,13 @@ class Encoder(nn.Module):
 
         # get the attention of the representation
         obj_main, obj_bg, attention = self.att(h)
+
+        obj_main = torch.flatten(obj_main, start_dim=1)
+        obj_bg = torch.flatten(obj_bg, start_dim=1)
+        obj_main = self.l3(obj_main)
+        obj_bg = self.l3(obj_bg)
+        obj_main = self.multi_att(obj_main, obj_main, obj_main)
+        obj_bg = self.multi_att(obj_bg, obj_bg, obj_bg)
 
         return self.project(obj_main), self.project(obj_bg)  # , obj_main, obj_bg, attention
 

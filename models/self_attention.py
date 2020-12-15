@@ -48,7 +48,7 @@ class Self_Attn(nn.Module):
 
         bg = x - self.gamma * out
         out = x + self.gamma * out
-        return out, bg, attention
+        return out, bg, self.gamma * out
 
 
 def attention(q, k, v, d_k, mask=None, dropout=None):

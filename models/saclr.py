@@ -9,6 +9,7 @@ import sys
 from util.device import get_device
 from models.baseline_encoder import Encoder
 from models.resnet import ResNetSimCLR
+from models.model_util import get_model
 
 
 apex_support = False
@@ -59,6 +60,8 @@ class SaCLR(object):
             loss = self.nt_xent_criterion(zis, zjs)
         elif self.config['loss_func'] == 'siam':
             loss = self.siam_loss(zis, zjs) + self.siam_loss(zjs, zis)
+        else:
+            raise ValueError('loss not valid ')
 
         return loss, obj_main
 
@@ -66,8 +69,7 @@ class SaCLR(object):
 
         train_loader, valid_loader = self.dataset.get_data_loaders()
 
-        model = Encoder(**self.config["model"]).to(self.device) if self.config['model']['base_model'] == 'baseline' \
-            else ResNetSimCLR(**self.config['model']).to(self.device)
+        model = get_model(self.config)
         model = self._load_pre_trained_weights(model)
 
         optimizer = torch.optim.Adam(model.parameters(), 3e-4, weight_decay=eval(self.config['weight_decay']))

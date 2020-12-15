@@ -56,7 +56,7 @@ class SaCLR(object):
         zjs = F.normalize(obj_bg, dim=1)
 
         if self.config['loss_func'] == 'sim':
-            loss = self.nt_xent_criterion(zis, zjs) + self.nt_xent_criterion(zjs, zis)
+            loss = self.nt_xent_criterion(zis, zjs)
         elif self.config['loss_func'] == 'siam':
             loss = self.siam_loss(zis, zjs) + self.siam_loss(zjs, zis)
 

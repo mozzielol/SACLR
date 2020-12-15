@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
-from models.self_attention import Self_Attn
+from models.self_attention import Self_Attn, MultiHeadAttention
 import torch
 
 
@@ -19,9 +19,12 @@ class ResNetSimCLR(nn.Module):
 
         num_ftrs = out_ch * 3 * 3
         # projection MLP
-        self.l1 = nn.Linear(num_ftrs, num_ftrs // 2)
-        self.l2 = nn.Linear(num_ftrs // 2, out_dim)
+        self.l1 = nn.Linear(num_ftrs, num_ftrs)
+        self.l2 = nn.Linear(num_ftrs, out_dim)
+
         self.att = Self_Attn(out_ch, 'relu')
+        self.l3 = nn.Linear(num_ftrs, num_ftrs)
+        self.multi_att = MultiHeadAttention(8, num_ftrs)
 
     def _get_basemodel(self, model_name):
         try:
@@ -34,6 +37,12 @@ class ResNetSimCLR(nn.Module):
     def forward(self, x):
         h = self.features(x)
         obj_main, obj_bg, attention = self.att(h)
+        obj_main = torch.flatten(obj_main, start_dim=1)
+        obj_bg = torch.flatten(obj_bg, start_dim=1)
+        obj_main = self.l3(obj_main)
+        obj_bg = self.l3(obj_bg)
+        obj_main = self.multi_att(obj_main, obj_main, obj_main)
+        obj_bg = self.multi_att(obj_bg, obj_bg, obj_bg)
 
         return self.project(obj_main), self.project(obj_bg)
 

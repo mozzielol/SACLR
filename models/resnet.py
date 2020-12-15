@@ -44,7 +44,7 @@ class ResNetSimCLR(nn.Module):
         # obj_main = self.multi_att(obj_main, obj_main, obj_main)
         # obj_bg = self.multi_att(obj_bg, obj_bg, obj_bg)
 
-        return self.project(obj_main), self.project(obj_bg)
+        return self.project(obj_main), h
 
     def project(self, x):
         x1 = torch.flatten(x, start_dim=1)

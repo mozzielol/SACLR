@@ -9,7 +9,7 @@ class ResNetSimCLR(nn.Module):
 
     def __init__(self, base_model, out_dim):
         super(ResNetSimCLR, self).__init__()
-        self.resnet_dict = {"resnet18": [models.resnet18(pretrained=False), 128],
+        self.resnet_dict = {"resnet18": [models.resnet18(pretrained=False), 512],
                             "resnet50": [models.resnet50(pretrained=False), 2048]}
 
         resnet, out_ch = self._get_basemodel(base_model)
@@ -17,7 +17,7 @@ class ResNetSimCLR(nn.Module):
 
         self.features = nn.Sequential(*list(resnet.children())[:32])
 
-        num_ftrs = out_ch * 12 * 12
+        num_ftrs = out_ch * 3 * 3
         # projection MLP
         self.l1 = nn.Linear(num_ftrs, num_ftrs)
         self.l2 = nn.Linear(num_ftrs, out_dim)

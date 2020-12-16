@@ -59,7 +59,7 @@ class SaCLR(object):
         if self.config['loss_func'] == 'sim':
             loss = self.nt_xent_criterion(zis, zjs)
         elif self.config['loss_func'] == 'siam':
-            loss = self.siam_loss(zis, zjs) + self.siam_loss(zjs, zis)
+            loss = self.siam_loss(zis, zjs)
         else:
             raise ValueError('loss not valid ')
 

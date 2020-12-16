@@ -22,6 +22,9 @@ class ResNetSimCLR(nn.Module):
         self.l1 = nn.Linear(num_ftrs, num_ftrs)
         self.l2 = nn.Linear(num_ftrs, out_dim)
 
+        self.l3 = nn.Linear(num_ftrs, num_ftrs)
+        self.l4 = nn.Linear(num_ftrs, out_dim)
+
         self.att = Self_Attn(out_ch, 'relu')
         # self.l3 = nn.Linear(num_ftrs, num_ftrs)
         # self.multi_att = MultiHeadAttention(8, num_ftrs)
@@ -44,11 +47,18 @@ class ResNetSimCLR(nn.Module):
         # obj_main = self.multi_att(obj_main, obj_main, obj_main)
         # obj_bg = self.multi_att(obj_bg, obj_bg, obj_bg)
 
-        return self.project(obj_main), h
+        return self.project(obj_main), self.project_global(obj_bg)
 
-    def project(self, x):
+    def project_local(self, x):
         x1 = torch.flatten(x, start_dim=1)
         x1 = self.l1(x1)
         x1 = F.relu(x1)
         x1 = self.l2(x1)
+        return x1
+
+    def project_global(self, x):
+        x1 = torch.flatten(x, start_dim=1)
+        x1 = self.l3(x1)
+        x1 = F.relu(x1)
+        x1 = self.l4(x1)
         return x1

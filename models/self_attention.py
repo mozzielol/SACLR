@@ -39,15 +39,15 @@ class Self_Attn(nn.Module):
         out = out.view(m_batchsize, C, width, height)
 
         # attentioin on background
-        # bg_att = self.softmax(torch.ones(attention.size()).to(get_device()) - attention)
-        # bg = torch.bmm(proj_value, bg_att.permute(0, 2, 1))
-        # bg = bg.view(m_batchsize, C, width, height)
+        bg_att = self.softmax(torch.ones(attention.size()).to(get_device()) - attention)
+        bg = torch.bmm(proj_value, bg_att.permute(0, 2, 1))
+        bg = bg.view(m_batchsize, C, width, height)
 
-        # bg = self.gamma * bg + x
-        # out = self.gamma * out + x
+        bg = self.gamma * bg
+        out = self.gamma * out
 
-        bg = x - self.gamma * out
-        out = x + self.gamma * out
+        # bg = x - self.gamma * out
+        # out = x + self.gamma * out
         return out, bg, self.gamma * out
 
 

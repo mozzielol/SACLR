@@ -15,7 +15,7 @@ class ResNetSimCLR(nn.Module):
         resnet, out_ch = self._get_basemodel(base_model)
         # num_ftrs = resnet.fc.in_features
 
-        self.features = nn.Sequential(*list(resnet.children())[:32])
+        self.features = nn.Sequential(*list(resnet.children())[:-1])
 
         num_ftrs = out_ch * 3 * 3
         # projection MLP
@@ -47,7 +47,7 @@ class ResNetSimCLR(nn.Module):
         # obj_main = self.multi_att(obj_main, obj_main, obj_main)
         # obj_bg = self.multi_att(obj_bg, obj_bg, obj_bg)
 
-        return self.project(obj_main), self.project_global(obj_bg)
+        return self.project_local(obj_main), self.project_global(obj_bg)
 
     def project_local(self, x):
         x1 = torch.flatten(x, start_dim=1)

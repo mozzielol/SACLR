@@ -69,7 +69,7 @@ class SaCLR(object):
 
         train_loader, valid_loader = self.dataset.get_data_loaders()
 
-        model = get_model(self.config)
+        model = get_model(self.config).to(get_device())
         model = self._load_pre_trained_weights(model)
 
         optimizer = torch.optim.Adam(model.parameters(), 3e-4, weight_decay=eval(self.config['weight_decay']))

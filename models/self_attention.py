@@ -102,4 +102,4 @@ class MultiHeadAttention(nn.Module):
             .view(bs, -1, self.d_model)
         output = self.out(concat)
 
-        return output
+        return concat

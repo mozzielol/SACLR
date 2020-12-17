@@ -10,7 +10,7 @@ ckpt: checkpoint
 loss_func: sim
 model:
   out_dim: 256
-  base_model: "resnet18"
+  base_model: "resnet34"
 
 dataset:
   s: 1

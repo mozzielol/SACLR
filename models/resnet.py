@@ -72,7 +72,7 @@ class ResNet34AT(ResNet):
     """
     def __init__(self, out_dim, **kwargs):
         super(ResNet34AT, self).__init__(**kwargs)
-        num_ftrs = 128 * 12 * 12
+        num_ftrs = 256 * 6 * 6
         self.multi_att = MultiHeadAttention(8, num_ftrs)
         self.l1 = nn.Linear(num_ftrs, num_ftrs // 2)
         self.l2 = nn.Linear(num_ftrs // 2, out_dim)

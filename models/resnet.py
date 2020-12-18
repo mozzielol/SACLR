@@ -70,10 +70,12 @@ class ResNet34AT(ResNet):
 
     Overloaded ResNet model to return attention maps.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, out_dim, **kwargs):
         super(ResNet34AT, self).__init__(**kwargs)
         num_ftrs = 128 * 12 * 12
         self.multi_att = MultiHeadAttention(8, num_ftrs)
+        self.l1 = nn.Linear(num_ftrs, num_ftrs // 2)
+        self.l2 = nn.Linear(num_ftrs // 2, out_dim)
 
 
     def forward(self, x):
@@ -84,13 +86,20 @@ class ResNet34AT(ResNet):
 
         g0 = self.layer1(x)
         g1 = self.layer2(g0)
-        # g2 = self.layer3(g1)
+        # g1 = self.layer3(g1)
         # g3 = self.layer4(g2)
         # obj_main = self.multi_att(g0, g0, g0)
         g1 = torch.flatten(g1, start_dim=1)
         obj_bg = self.multi_att(g1, g1, g1)
-        return obj_bg, g1,  # [g.pow(2).mean(1) for g in (g0, g1, g2, g3)]
+        return self.project(obj_bg.squeeze()), self.project(g1),  # [g.pow(2).mean(1) for g in (g0, g1, g2, g3)]
+
+    def project(self, x):
+        x1 = torch.flatten(x, start_dim=1)
+        x1 = self.l1(x1)
+        x1 = F.relu(x1)
+        x1 = self.l2(x1)
+        return x1
 
 
-def get_ResNet34():
-    return ResNet34AT(**{'block': BasicBlock, 'layers': [3, 4, 6, 3]})
+def get_ResNet34(base_model, out_dim):
+    return ResNet34AT(out_dim, **{'block': BasicBlock, 'layers': [3, 4, 6, 3]})

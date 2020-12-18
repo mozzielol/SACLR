@@ -73,9 +73,10 @@ class ResNet34AT(ResNet):
     def __init__(self, out_dim, **kwargs):
         super(ResNet34AT, self).__init__(**kwargs)
         num_ftrs = 256 * 6 * 6
-        self.multi_att = MultiHeadAttention(8, num_ftrs)
+        # self.multi_att = MultiHeadAttention(8, num_ftrs)
+        self.att = Self_Attn(256, 'relu')
         self.l1 = nn.Linear(num_ftrs, num_ftrs // 2)
-        self.l2 = nn.Linear(num_ftrs // 2, out_dim)
+        self.l2 = nn.Linear(num_ftrs // 2, num_ftrs)
 
 
     def forward(self, x):
@@ -86,12 +87,13 @@ class ResNet34AT(ResNet):
 
         g0 = self.layer1(x)
         g1 = self.layer2(g0)
-        g1 = self.layer3(g1)
+        g2 = self.layer3(g1)
+        obj_main, obj_bg, attention = self.att(g2)
         # g3 = self.layer4(g2)
         # obj_main = self.multi_att(g0, g0, g0)
-        g1 = torch.flatten(g1, start_dim=1)
-        obj_bg = self.multi_att(g1, g1, g1)
-        return self.project(obj_bg.squeeze()), self.project(g1),  # [g.pow(2).mean(1) for g in (g0, g1, g2, g3)]
+        # g1 = torch.flatten(g1, start_dim=1)
+        # obj_bg = self.multi_att(g1, g1, g1)
+        return torch.flatten(obj_bg, start_dim=1), self.project(torch.flatten(obj_main, start_dim=1))  # [g.pow(2).mean(1) for g in (g0, g1, g2, g3)]
 
     def project(self, x):
         x1 = torch.flatten(x, start_dim=1)

@@ -43,7 +43,7 @@ class SaCLR(object):
         if config['loss_func'] == 'sim':
             self.nt_xent_criterion = NTXentLoss(self.device, config['batch_size'], **config['loss'])
         elif config['loss_func'] == 'siam':
-            self.siam_loss = Siam()
+            self.siam_loss = Siam(config['batch_size'])
         else:
             raise NotImplemented()
 
@@ -59,7 +59,7 @@ class SaCLR(object):
         if self.config['loss_func'] == 'sim':
             loss = self.nt_xent_criterion(zis, zjs)
         elif self.config['loss_func'] == 'siam':
-            loss = self.siam_loss(zis, zjs)
+            loss = self.siam_loss(obj_main, obj_bg)
         else:
             raise ValueError('loss not valid ')
 

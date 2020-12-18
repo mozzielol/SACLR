@@ -86,7 +86,7 @@ class ResNet34AT(ResNet):
 
         g0 = self.layer1(x)
         g1 = self.layer2(g0)
-        # g1 = self.layer3(g1)
+        g1 = self.layer3(g1)
         # g3 = self.layer4(g2)
         # obj_main = self.multi_att(g0, g0, g0)
         g1 = torch.flatten(g1, start_dim=1)

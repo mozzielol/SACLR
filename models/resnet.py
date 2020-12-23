@@ -4,6 +4,7 @@ import torchvision.models as models
 from models.self_attention import Self_Attn, MultiHeadAttention
 import torch
 from torchvision.models.resnet import ResNet, BasicBlock
+from models.split_attention import Splat
 
 
 class ResNetSimCLR(nn.Module):
@@ -70,13 +71,13 @@ class ResNet34AT(ResNet):
 
     Overloaded ResNet model to return attention maps.
     """
+
     def __init__(self, out_dim, **kwargs):
         super(ResNet34AT, self).__init__(**kwargs)
-        num_ftrs = 256 * 6 * 6
-        self.multi_att = MultiHeadAttention(8, num_ftrs)
+        num_ftrs = 512 * 3 * 3
         self.l1 = nn.Linear(num_ftrs, num_ftrs // 2)
-        self.l2 = nn.Linear(num_ftrs // 2, out_dim)
-
+        self.l2 = nn.Linear(num_ftrs // 2, 64)
+        self.splat = Splat(512, 8, 8)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -86,12 +87,10 @@ class ResNet34AT(ResNet):
 
         g0 = self.layer1(x)
         g1 = self.layer2(g0)
-        g1 = self.layer3(g1)
-        # g3 = self.layer4(g2)
+        g2 = self.layer3(g1)
+        g3 = self.layer4(g2)
         # obj_main = self.multi_att(g0, g0, g0)
-        g1 = torch.flatten(g1, start_dim=1)
-        obj_bg = self.multi_att(g1, g1, g1)
-        return self.project(obj_bg.squeeze()), self.project(g1),  # [g.pow(2).mean(1) for g in (g0, g1, g2, g3)]
+        return self.project(g3), self.splat(g3)  # [g.pow(2).mean(1) for g in (g0, g1, g2, g3)]
 
     def project(self, x):
         x1 = torch.flatten(x, start_dim=1)
@@ -103,3 +102,9 @@ class ResNet34AT(ResNet):
 
 def get_ResNet34(base_model, out_dim):
     return ResNet34AT(out_dim, **{'block': BasicBlock, 'layers': [3, 4, 6, 3]})
+
+
+if __name__ == '__main__':
+    model = get_ResNet34(None, 256)
+    from torchsummary import summary
+    summary(model, (3, 96, 96))

@@ -7,7 +7,7 @@ log_every_n_steps: 50
 weight_decay: 10e-6
 fp16_precision: False
 ckpt: checkpoint
-loss_func: sim
+loss_func: split
 model:
   out_dim: 256
   base_model: "resnet34"
@@ -20,4 +20,4 @@ dataset:
 
 loss:
   temperature: 0.5
-  use_cosine_similarity: True
+  use_cosine_similarity: False

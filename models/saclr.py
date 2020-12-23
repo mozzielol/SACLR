@@ -1,8 +1,6 @@
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
-from loss.nt_xent import NTXentLoss
-from loss.sim_siam import Siam
 import os
 import shutil
 import sys
@@ -10,6 +8,7 @@ from util.device import get_device
 from models.baseline_encoder import Encoder
 from models.resnet import ResNetSimCLR
 from models.model_util import get_model
+from loss import get_loss
 
 
 apex_support = False
@@ -40,28 +39,18 @@ class SaCLR(object):
         self.device = get_device()
         self.writer = SummaryWriter()
         self.dataset = dataset
-        if config['loss_func'] == 'sim':
-            self.nt_xent_criterion = NTXentLoss(self.device, config['batch_size'], **config['loss'])
-        elif config['loss_func'] == 'siam':
-            self.siam_loss = Siam()
-        else:
-            raise NotImplemented()
-
+        self.criterion = get_loss(config)
 
     def _step(self, model, train_x):
         # get the representations and the projections,
         # Currently, get the attention of the representation
         obj_main, obj_bg = model(train_x)  # [N,C]
         # normalize projection feature vectors
-        zis = F.normalize(obj_main, dim=1)
-        zjs = F.normalize(obj_bg, dim=1)
+        if self.config['loss_func'] != 'split':
+            obj_main = F.normalize(obj_main, dim=1)
+            obj_bg = F.normalize(obj_bg, dim=1)
 
-        if self.config['loss_func'] == 'sim':
-            loss = self.nt_xent_criterion(zis, zjs)
-        elif self.config['loss_func'] == 'siam':
-            loss = self.siam_loss(zis, zjs)
-        else:
-            raise ValueError('loss not valid ')
+        loss = self.criterion(obj_main, obj_bg)
 
         return loss, obj_main
 

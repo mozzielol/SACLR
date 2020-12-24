@@ -72,12 +72,13 @@ class ResNet34AT(ResNet):
     Overloaded ResNet model to return attention maps.
     """
 
-    def __init__(self, out_dim, **kwargs):
+    def __init__(self, out_dim, config, **kwargs):
         super(ResNet34AT, self).__init__(**kwargs)
-        num_ftrs = 512 * 3 * 3
+        num_ftrs = 256 * 3 * 3
         self.l1 = nn.Linear(num_ftrs, num_ftrs // 2)
-        self.l2 = nn.Linear(num_ftrs // 2, 64)
-        self.splat = Splat(512, 8, 8)
+        self.l2 = nn.Linear(num_ftrs // 2, 500)
+        self.splat = Splat(**config['split_at'])
+        self.config = config
 
     def forward(self, x):
         x = self.conv1(x)
@@ -90,6 +91,15 @@ class ResNet34AT(ResNet):
         g2 = self.layer3(g1)
         g3 = self.layer4(g2)
         # obj_main = self.multi_att(g0, g0, g0)
+        if self.config['loss_func'] == 'split_view':
+            splits = self.splat(g3)
+            att1, view1 = splits[0]
+            att2, view2 = splits[1]
+            view1 = att1 * view1
+            view2 = att2 * view2
+            if self.config['state'] == 'eval':
+                return torch.flatten(g3, start_dim=1)
+            return self.project(view1), self.project(view2)
         return self.project(g3), self.splat(g3)  # [g.pow(2).mean(1) for g in (g0, g1, g2, g3)]
 
     def project(self, x):
@@ -100,11 +110,11 @@ class ResNet34AT(ResNet):
         return x1
 
 
-def get_ResNet34(base_model, out_dim):
-    return ResNet34AT(out_dim, **{'block': BasicBlock, 'layers': [3, 4, 6, 3]})
+def get_ResNet34(config, base_model, out_dim):
+    return ResNet34AT(out_dim, config, **{'block': BasicBlock, 'layers': [3, 4, 6, 3]})
 
 
 if __name__ == '__main__':
-    model = get_ResNet34(None, 256)
+    model = get_ResNet34(None, 256, None)
     from torchsummary import summary
     summary(model, (3, 96, 96))

@@ -7,7 +7,8 @@ log_every_n_steps: 50
 weight_decay: 10e-6
 fp16_precision: False
 ckpt: checkpoint
-loss_func: split
+loss_func: split_view
+state: train
 model:
   out_dim: 256
   base_model: "resnet34"
@@ -21,3 +22,14 @@ dataset:
 loss:
   temperature: 0.5
   use_cosine_similarity: False
+
+split_at:
+  channels: 512
+  radix: 2
+  cardinality: 2
+  reduction_factor: 4
+  at_map: True
+
+earlystopping:
+  patience: 7
+  delta: 0

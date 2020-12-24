@@ -34,7 +34,7 @@ class Splat(nn.Module):
         self.channels = channels
         self.at_map = at_map
         inter_channels = max(channels * radix // reduction_factor, 32)
-        self.fc1 = nn.Conv2d(channels // radix, inter_channels, 1, groups=cardinality)
+        self.fc1 = nn.Conv2d(channels, inter_channels, 1, groups=cardinality)
         self.bn1 = nn.BatchNorm2d(inter_channels)
         self.relu = nn.ReLU(inplace=True)
         if at_map:
@@ -47,7 +47,7 @@ class Splat(nn.Module):
         batch, rchannel = x.shape[:2]
         if self.radix > 1:
             splited = torch.split(x, rchannel // self.radix, dim=1)
-            gap = sum(splited)
+            gap = x
         else:
             gap = x
         if not self.at_map:

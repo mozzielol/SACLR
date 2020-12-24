@@ -43,7 +43,27 @@ class Split_KL(nn.Module):
                     if self.get_softmax:
                         local_feature = F.softmax(local_feature, dim=1)
                         global_feature = F.softmax(global_feature, dim=1)
-                    M = ((global_feature + local_feature) * local_att / 2).log()
-                    # loss += (self.kl(M, global_feature * local_att) + self.kl(M, local_feature * local_att)) / 2
-                    loss += self.ntx_loss(local_feature, global_feature) * torch.mean(local_att) / (W * H)
+                    M = ((global_feature + local_feature) / 2).log()
+                    loss += torch.sum(local_att) * (self.kl(M, global_feature) + self.kl(M, local_feature)) / 2
+                    # loss += self.ntx_loss(local_feature, global_feature) * torch.mean(local_att) / (W * H)
+        return loss
+
+
+class Split_KL_view(nn.Module):
+    def __init__(self, ntx_loss, get_softmax=True):
+        super(Split_KL_view, self).__init__()
+        self.get_softmax = get_softmax
+        self.ntx_loss = ntx_loss
+        self.kl = nn.KLDivLoss(reduction='batchmean')
+
+    def forward(self, view1, view2):
+        loss = self.ntx_loss(view1, view2)
+        """
+        # JS loss
+        if self.get_softmax:
+            view1 = F.softmax(view1, dim=1)
+            view2 = F.softmax(view2, dim=1)
+        M = ((view1 + view2) / 2).log()
+        loss = (self.kl(M, view1) + self.kl(M, view2)) / 2
+        """
         return loss

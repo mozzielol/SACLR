@@ -5,10 +5,9 @@ import os
 import shutil
 import sys
 from util.device import get_device
-from models.baseline_encoder import Encoder
-from models.resnet import ResNetSimCLR
 from models.model_util import get_model
 from loss import get_loss
+from util.earlystopping import EarlyStopping
 
 
 apex_support = False
@@ -40,13 +39,14 @@ class SaCLR(object):
         self.writer = SummaryWriter()
         self.dataset = dataset
         self.criterion = get_loss(config)
+        self.early_stopping = EarlyStopping(**config['earlystopping'])
 
     def _step(self, model, train_x):
         # get the representations and the projections,
         # Currently, get the attention of the representation
         obj_main, obj_bg = model(train_x)  # [N,C]
         # normalize projection feature vectors
-        if self.config['loss_func'] != 'split':
+        if 'split' not in self.config['loss_func']:
             obj_main = F.normalize(obj_main, dim=1)
             obj_bg = F.normalize(obj_bg, dim=1)
 
@@ -115,10 +115,17 @@ class SaCLR(object):
                 self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
                 valid_n_iter += 1
 
+                # Early stopping
+                self.early_stopping(valid_loss, model)
+
             # warmup for the first 10 epochs
             if epoch_counter >= 10:
                 scheduler.step(epoch_counter)
             self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)
+
+            if self.early_stopping.early_stop:
+                print("Early stopping")
+                break
 
     def _load_pre_trained_weights(self, model):
         try:

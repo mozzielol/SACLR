@@ -10,7 +10,7 @@ def get_model(config):
     elif config['model']['base_model'] == 'res_encoder':
         model = Res_encoder(**config["model"]).to(device)
     elif config['model']['base_model'] == 'resnet34':
-        model = get_ResNet34(**config["model"])
+        model = get_ResNet34(config, **config["model"])
     else:
         model = ResNetSimCLR(**config['model']).to(device)
     return model

@@ -4,12 +4,13 @@ import torch.nn.functional as F
 
 
 class Sim_cluster(nn.Module):
-    def __init__(self, in_features, num_cluster=10):
+    def __init__(self, in_features, num_cluster=10, config=None):
         super(Sim_cluster, self).__init__()
         self.projector = nn.Linear(in_features, num_cluster, bias=False)
         self.tao = 0.001
         self.num_cluster = num_cluster
         self.criterion = nn.BCELoss(reduction='sum')
+        self.config = config
 
     def forward(self, x):
         x = torch.flatten(x, start_dim=1)
@@ -27,6 +28,7 @@ class Sim_cluster(nn.Module):
         for idx in range(self.num_cluster):
             indices = scores[:, idx]
             probs = torch.sum(torch.exp(similarity[:, idx]) * indices) / \
-                                   torch.sum(torch.exp(similarity[:, idx]))
+                    torch.sum(torch.exp(similarity[:, idx])) \
+                    * (torch.abs(torch.sum(indices) - self.config['batch_size']) + 1)
             loss += self.criterion(probs, torch.ones_like(probs))
         return loss

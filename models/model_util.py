@@ -14,7 +14,7 @@ def get_model(config):
     elif base_model == 'resnet34':
         model = get_ResNet34(config, **config["model"])
     elif base_model == 'vgg16':
-        model = VGG16()
+        model = VGG16(config)
     else:
         model = ResNetSimCLR(**config['model']).to(device)
     return model

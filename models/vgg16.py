@@ -7,11 +7,11 @@ from models.clustering import Sim_cluster
 
 class VGG16(nn.Module):
 
-    def __init__(self):
+    def __init__(self, config):
         super(VGG16, self).__init__()
         # self.saliency_map_1 = Saliency_vgg()
         # self.saliency_map_2 = Saliency_vgg()
-        self.cluster = Sim_cluster(8192, 10)
+        self.cluster = Sim_cluster(8192, 10, config)
         # 3 * 224 * 224
         self.conv1_1 = nn.Conv2d(3, 64, 3)  # 64 * 222 * 222
         self.conv1_2 = nn.Conv2d(64, 64, 3, padding=(1, 1))  # 64 * 222* 222

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.self_attention import Self_Attn, MultiHeadAttention
+from attention.self_attention import Self_Attn
 
 
 class Encoder(nn.Module):

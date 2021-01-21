@@ -1,10 +1,10 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
-from models.self_attention import Self_Attn, MultiHeadAttention
+from attention.self_attention import Self_Attn
 import torch
 from torchvision.models.resnet import ResNet, BasicBlock
-from models.split_attention import Splat
+from attention.split_attention import Splat
 
 
 class ResNetSimCLR(nn.Module):

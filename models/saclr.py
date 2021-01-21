@@ -44,6 +44,8 @@ class SaCLR(object):
     def _step(self, model, train_x):
         # get the representations and the projections,
         # Currently, get the attention of the representation
+        if self.config['model']['base_model'] == 'vgg16':
+            return model(train_x)
         obj_main, obj_bg = model(train_x)  # [N,C]
         # normalize projection feature vectors
         if 'split' not in self.config['loss_func']:

@@ -29,6 +29,6 @@ class Sim_cluster(nn.Module):
             indices = scores[:, idx]
             probs = torch.sum(torch.exp(similarity[:, idx]) * indices) / \
                     torch.sum(torch.exp(similarity[:, idx])) \
-                    * (torch.abs(torch.sum(indices) - self.config['batch_size']) + 1)
+                    * (torch.abs(torch.sum(indices) - self.config['batch_size'] // self.num_cluster) + 1)
             loss += self.criterion(probs, torch.ones_like(probs))
         return loss
